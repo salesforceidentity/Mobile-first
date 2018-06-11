@@ -1,0 +1,23 @@
+<apex:page lightningStylesheets="true" controller="MFIController"  action="{!updateNickname}">
+    <br/><br/><br/>
+    <apex:form >
+        <apex:commandButton action="{!disconnectToopher}" value="Disconnect Authenticator" rendered="{!IsAuthenticatorVerified == true}"/>
+        <apex:commandButton action="{!registerToopher}" value="Connect Authenticator" rendered="{!IsAuthenticatorVerified == false}"/>
+        <br/><br/>           
+        <apex:commandButton action="{!disconnectU2F}" value="Disconnect U2F" rendered="{!IsU2FVerified == true}"/>
+        <apex:commandButton action="{!registerU2F}" value="Connect U2F" rendered="{!IsU2FVerified == false}"/>
+        <br/><br/>   
+        <apex:commandButton action="{!disconnectTOTP}" value="Disconnect TOTP" rendered="{!IsTOTPVerified == true}"/>
+        <apex:commandButton action="{!registerTOTP}" value="Connect TOTP" rendered="{!IsTOTPVerified == false}"/>
+        <br/><br/> 
+        <apex:inputText value="{!phone}" html-readonly="true"/>&nbsp;
+        <apex:commandLink action="{!disconnectSMS}" value="Reset" rendered="{!IsPhoneVerified == true}"/>
+        <apex:commandLink action="{!registerSMS}" value="Verify" rendered="{!IsPhoneVerified == false}"/>
+        <apex:commandLink action="{!registerSMS}" value="Edit" rendered="{!IsPhoneVerified == false}"/>
+        <br/><br/>  
+        <apex:inputText value="{!email}" />&nbsp;&nbsp;
+        <apex:commandLink action="{!disconnectEmail}" value="Reset" rendered="{!IsEmailVerified == true}"/>
+        <apex:commandLink action="{!verifyEmail}" value="Verify" rendered="{!IsEmailVerified == false}"/>
+        <br/><br/>      
+    </apex:form>
+</apex:page>

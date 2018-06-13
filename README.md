@@ -11,6 +11,5 @@ Sample Passwordless signin/signup for Salesforce Communities
 7. Create ‘Customers’ Account
 8. Make RegisterPhoneFlow accessible for ‘Customer Community User’ profile
 9. Create a VF Login flow and associate RegisterPhoneFlow VF page with ‘Customer Community User’ profile
-10. Enable Visualforce page access for ‘External Identity User
-11. Make it your own
+10. Make it your own
 

@@ -3,7 +3,7 @@
 Sample Passwordless signin/signup for Salesforce Communities 
 
 1. Upload css.zip to static resources. Make it public and call it “styles”
-2. Create the apex controllers  and Create the visualforce files
+2. Create the apex controllers and the visualforce files
 3. Enable Communities and go to Administration > Login & Registration 
 4. Select PasswordlessSignin as a VF login page
 5. Select PasswordlessSignup as a VF registration page Make them public

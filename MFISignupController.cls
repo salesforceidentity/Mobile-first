@@ -64,7 +64,7 @@ global without sharing class MFISignupController {
         String key = EncodingUtil.convertToHex(blobKey);
         password = key.substring(0,len);
         
-        // TODO: assing the Is Single Sign-On Enabled user perm to the user
+        // TODO: assign the Is Single Sign-On Enabled user perm to the user
         
         // Empty input
         if(firstname == null || firstname == '')

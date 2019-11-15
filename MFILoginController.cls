@@ -1,8 +1,9 @@
-global with sharing class MFILoginController {
+global without sharing class MFILoginController {
   
     global String input {get; set;}
     global String password {get; set;}
-   
+    global String providedCode {get; set;}
+       
     public String startURL  {get; set;}
     public String siteURL  {get; set;}
     
@@ -10,6 +11,7 @@ global with sharing class MFILoginController {
     public Boolean IsPasswordChallenged {get; set;} 
     public Boolean IsBack {get; set;}
     public Boolean IsChooser {get; set;}
+    public Boolean IsSMS {get; set;}
     
     public List<Auth.VerificationMethod> methods;
     
@@ -20,6 +22,8 @@ global with sharing class MFILoginController {
     
     public String label;
     public String error;
+    public String smsChallengeId;
+
     
     public Component.Apex.OutputPanel outPanel; 
     
@@ -27,7 +31,7 @@ global with sharing class MFILoginController {
     {
         startURL = System.currentPageReference().getParameters().get('startURL');
         
-        //if (startURL == null) startURL = '/'; 
+        if (startURL == null) startURL = '/'; 
         
         // Add verification methods
         methods = new List<Auth.verificationMethod>();
@@ -55,6 +59,7 @@ global with sharing class MFILoginController {
         IsChooser = true;
         IsPasswordChallenged = false;
         IsBack = true;
+        IsSMS = false;
         
         label = 'Choose method:';
 
@@ -66,10 +71,13 @@ global with sharing class MFILoginController {
         IsPasswordChallenged = false;
         IsBack = false;
         IsChooser = false;
+        IsSMS = false;        
         
         label= 'Enter Email or Phone no';
     }
-        
+
+    // this method uses Salesforce's default page        
+/*
     global PageReference invokeSMS()
     {
         methods = new List<Auth.verificationMethod>();
@@ -79,6 +87,7 @@ global with sharing class MFILoginController {
 
         return Site.passwordlessLogin(userid, methods, startURL);
     } 
+*/
     
     global PageReference invokeEmail()
     {
@@ -111,6 +120,26 @@ global with sharing class MFILoginController {
         return Site.passwordlessLogin(userid, methods, startURL);
     } 
    
+    global PageReference login_with_sms(){
+        IsDiscovery = false; 
+        IsPasswordChallenged = false;
+        IsBack = false;
+        IsChooser = false;
+        IsSMS = true;
+        
+        label= 'Enter code';  
+        error = null;
+        smsChallengeId = System.UserManagement.initPasswordlessLogin(userid, Auth.VerificationMethod.SMS);
+        if (providedCode != null) {
+            Auth.VerificationResult res = System.UserManagement.verifyPasswordlessLogin(userid, Auth.VerificationMethod.SMS, smsChallengeId, providedCode, startURL);
+            if (res.success) {
+                return res.redirect;
+            } else {
+                error = res.message;
+                return null;
+            }
+        } else return null;
+    }
       
     global PageReference login_with_password() 
     { 
@@ -170,11 +199,12 @@ global with sharing class MFILoginController {
         // If the input is a phone no.
         if (input.IsNumeric())
         {
-            Profile p = [select id from profile where name = 'Customer Community User' Limit 1];
+            Profile p = [select id from profile where name = 'PasswordLess EI' Limit 1];
             
             String phone = UserManagement.formatPhoneNumber('+1', input);
             
             users = [select name, username, id, email from User where mobilephone=:phone and isactive=true and profileId=:p.Id];
+            System.debug(users);
             if(users == null || users.isEmpty() == true)
             {
                 error = 'Can\'t find a user';
@@ -241,7 +271,7 @@ global with sharing class MFILoginController {
         inputSecret.expressions.value = '{!password}';
         
         Component.Apex.commandLink cmdLink = new Component.Apex.commandLink();
-        cmdLink.value = 'NEXT';
+        cmdLink.value = 'Login';
         cmdLink.styleClass = 'signInButton';
         cmdLink.expressions.action = '{! login_with_password }';
         
@@ -257,6 +287,30 @@ global with sharing class MFILoginController {
         return outPanel;
     }
     
+    public Component.Apex.OutputPanel getTheSMSPanel() {
+
+        Component.Apex.OutputPanel outPanel = new Component.Apex.OutputPanel();
+        
+        Component.Apex.InputText inputText = new Component.Apex.InputText();
+        inputText.expressions.value = '{!providedCode}';
+        
+        Component.Apex.commandLink cmdLink = new Component.Apex.commandLink();
+        cmdLink.value = 'Login';
+        cmdLink.styleClass = 'signInButton';
+        cmdLink.expressions.action = '{! login_with_sms }';
+        
+        Component.Apex.outputLabel errorLabel = new Component.Apex.outputLabel();
+        errorLabel.styleClass = 'error';
+        errorLabel.value = error;
+        //errorLabel.id = 'errorlabel';
+        
+        outPanel.childComponents.add( inputText );
+        outPanel.childComponents.add( errorLabel );
+        outPanel.childComponents.add( cmdLink );
+
+        return outPanel;
+    }    
+    
     public Component.Apex.OutputPanel getTheChooserPanel() {
         Component.Apex.OutputPanel outPanel = new Component.Apex.OutputPanel();
         Component.Apex.OutputText htmlTxt = new Component.Apex.OutputText();
@@ -267,7 +321,7 @@ global with sharing class MFILoginController {
         Component.Apex.ActionFunction Passwordfunction = new Component.Apex.ActionFunction(); 
         
         SMSfunction.name = 'setSMSMethod';
-        SMSfunction.expressions.action = '{!invokeSMS}';
+        SMSfunction.expressions.action = '{!login_with_sms}';
         
         Emailfunction.name = 'setEmailMethod';
         Emailfunction.expressions.action = '{!invokeEmail}';
